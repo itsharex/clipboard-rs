@@ -1,13 +1,16 @@
 pub mod common;
 mod platform;
-pub use common::{ClipboardContent, ClipboardHandler, ContentFormat, Result, RustImageData};
+#[cfg(feature = "image")]
+pub use common::RustImageData;
+pub use common::{ClipboardContent, ClipboardHandler, ContentFormat, Result};
+#[cfg(feature = "image")]
 pub use image::imageops::FilterType;
 #[cfg(target_os = "linux")]
 pub use platform::ClipboardContextX11Options;
 pub use platform::{ClipboardContext, ClipboardWatcherContext, WatcherShutdown};
 
 pub trait Clipboard: Send {
-	/// zh: 获得剪切板当前内容的所有格式
+    /// zh: 获得剪切板当前内容的所有格式
 	/// en: Get all formats of the current content in the clipboard
 	fn available_formats(&self) -> Result<Vec<String>>;
 
@@ -33,6 +36,7 @@ pub trait Clipboard: Send {
 	/// en: Get the html format content in the clipboard as string
 	fn get_html(&self) -> Result<String>;
 
+	#[cfg(feature = "image")]
 	fn get_image(&self) -> Result<RustImageData>;
 
 	fn get_files(&self) -> Result<Vec<String>>;
@@ -47,6 +51,7 @@ pub trait Clipboard: Send {
 
 	fn set_html(&self, html: String) -> Result<()>;
 
+	#[cfg(feature = "image")]
 	fn set_image(&self, image: RustImageData) -> Result<()>;
 
 	fn set_files(&self, files: Vec<String>) -> Result<()>;
@@ -71,6 +76,7 @@ pub trait ClipboardWatcher<T: ClipboardHandler>: Send {
 
 impl WatcherShutdown {
 	/// zh: 停止监视
+	///
 	/// en: stop watching
 	pub fn stop(self) {
 		drop(self);

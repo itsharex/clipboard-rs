@@ -1,10 +1,13 @@
 use crate::{
-	common::{Result, RustImage},
-	Clipboard, ClipboardContent, ClipboardHandler, ClipboardWatcher, ContentFormat, RustImageData,
+	common::Result, Clipboard, ClipboardContent, ClipboardHandler, ClipboardWatcher, ContentFormat,
 };
+#[cfg(feature = "image")]
+use crate::{common::RustImage, RustImageData};
 use objc2::{rc::Retained, runtime::ProtocolObject};
 use objc2_foundation::{ns_string, NSArray, NSData, NSDictionary, NSString};
-use objc2_ui_kit::{UIImage, UIImagePNGRepresentation, UIPasteboard};
+use objc2_ui_kit::UIPasteboard;
+#[cfg(feature = "image")]
+use objc2_ui_kit::{UIImage, UIImagePNGRepresentation};
 use std::{
 	sync::mpsc::{self, Receiver, Sender},
 	time::Duration,
@@ -133,6 +136,7 @@ impl ClipboardContext {
 					};
 					Some(pair)
 				}
+				#[cfg(feature = "image")]
 				ClipboardContent::Image(image) => {
 					let png = image.to_png().unwrap();
 					let ns_data = NSData::with_bytes(png.get_bytes());
@@ -170,6 +174,7 @@ impl Clipboard for ClipboardContext {
 	fn has(&self, format: ContentFormat) -> bool {
 		match format {
 			ContentFormat::Text => unsafe { self.clipboard.hasStrings() },
+			#[cfg(feature = "image")]
 			ContentFormat::Image => unsafe { self.clipboard.hasImages() },
 			ContentFormat::Rtf => unsafe {
 				self.clipboard
@@ -223,6 +228,7 @@ impl Clipboard for ClipboardContext {
 		Ok(String::from_utf8_lossy(&buffer).to_string())
 	}
 
+	#[cfg(feature = "image")]
 	fn get_image(&self) -> Result<RustImageData> {
 		let image = unsafe { self.clipboard.image() };
 		if let Some(image) = image {
@@ -272,6 +278,7 @@ impl Clipboard for ClipboardContext {
 		Err("Not supported".into())
 	}
 
+	#[cfg(feature = "image")]
 	fn set_image(&self, image: RustImageData) -> Result<()> {
 		if image.is_empty() {
 			Err("Image is empty".into())

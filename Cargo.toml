@@ -11,8 +11,16 @@ keywords = ["clipboard"]
 edition = "2021"
 rust-version = "1.67.0"
 
+[features]
+image = ["dep:image"]
+default = ["image"]
+
+[[example]]
+name = "image"
+required-features = ["image"]
+
 [dependencies]
-image = { version = "0.25.5", default-features = false, features = [
+image = { version = "0.25.5", optional = true , default-features = false, features = [
     "png",
     "jpeg",
 ] }
@@ -34,7 +42,7 @@ windows = { version = "0.59.0", features = [
     "Win32_System_DataExchange",
 ] }
 clipboard-win = { version = "5.4.0", features = ["monitor"] }
-image = { version = "0.25.5", default-features = false, features = [
+image = { version = "0.25.5", optional = true ,default-features = false, features = [
     "bmp",
     "png",
     "jpeg",
@@ -53,7 +61,7 @@ objc2-app-kit = { version = "0.3.0", features = [
     "NSPasteboardItem",
     "NSImage",
 ] }
-image = { version = "0.25.5", default-features = false, features = [
+image = { version = "0.25.5", optional = true ,default-features = false, features = [
     "tiff",
     "png",
     "jpeg",

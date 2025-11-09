@@ -1,4 +1,6 @@
-use crate::common::{Result, RustImage, RustImageData};
+use crate::common::Result;
+#[cfg(feature = "image")]
+use crate::common::{RustImage, RustImageData};
 use crate::{Clipboard, ClipboardContent, ClipboardHandler, ClipboardWatcher, ContentFormat};
 use objc2::rc::Retained;
 use objc2::AllocAnyThread;
@@ -151,6 +153,7 @@ impl ClipboardContext {
 						item.setString_forType(&NSString::from_str(html), NSPasteboardTypeHTML);
 						has_content_other_than_files = true;
 					}
+					#[cfg(feature = "image")]
 					ClipboardContent::Image(image) => {
 						if let Ok(png_buffer) = image.to_png() {
 							let bytes = png_buffer.get_bytes();
@@ -218,6 +221,7 @@ impl Clipboard for ClipboardContext {
 				let types = NSArray::arrayWithObject(NSPasteboardTypeHTML);
 				self.pasteboard.availableTypeFromArray(&types).is_some()
 			},
+			#[cfg(feature = "image")]
 			ContentFormat::Image => unsafe {
 				// Currently only judge whether there is a png format
 				let types = NSArray::from_retained_slice(&[
@@ -261,6 +265,7 @@ impl Clipboard for ClipboardContext {
 		self.plain(unsafe { NSPasteboardTypeHTML })
 	}
 
+	#[cfg(feature = "image")]
 	fn get_image(&self) -> Result<RustImageData> {
 		autoreleasepool(|_| {
 			let png_data = unsafe { self.pasteboard.dataForType(NSPasteboardTypePNG) };
@@ -329,6 +334,7 @@ impl Clipboard for ClipboardContext {
 								break;
 							}
 						}
+						#[cfg(feature = "image")]
 						ContentFormat::Image => {
 							if let Ok(image) = self.get_image() {
 								results.push(ClipboardContent::Image(image));
@@ -375,6 +381,7 @@ impl Clipboard for ClipboardContext {
 		self.write_to_clipboard(&[ClipboardContent::Html(html)], true)
 	}
 
+	#[cfg(feature = "image")]
 	fn set_image(&self, image: RustImageData) -> Result<()> {
 		self.write_to_clipboard(&[ClipboardContent::Image(image)], true)
 	}

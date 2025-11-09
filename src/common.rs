@@ -1,4 +1,6 @@
+#[cfg(feature = "image")]
 use image::imageops::FilterType;
+#[cfg(feature = "image")]
 use image::{ColorType, DynamicImage, GenericImageView, ImageFormat, RgbaImage};
 use std::error::Error;
 use std::io::Cursor;
@@ -20,6 +22,7 @@ pub enum ClipboardContent {
 	Text(String),
 	Rtf(String),
 	Html(String),
+	#[cfg(feature = "image")]
 	Image(RustImageData),
 	Files(Vec<String>),
 	Other(String, Vec<u8>),
@@ -31,6 +34,7 @@ impl ContentData for ClipboardContent {
 			ClipboardContent::Text(_) => ContentFormat::Text,
 			ClipboardContent::Rtf(_) => ContentFormat::Rtf,
 			ClipboardContent::Html(_) => ContentFormat::Html,
+			#[cfg(feature = "image")]
 			ClipboardContent::Image(_) => ContentFormat::Image,
 			ClipboardContent::Files(_) => ContentFormat::Files,
 			ClipboardContent::Other(format, _) => ContentFormat::Other(format.clone()),
@@ -43,6 +47,7 @@ impl ContentData for ClipboardContent {
 			ClipboardContent::Rtf(data) => data.as_bytes(),
 			ClipboardContent::Html(data) => data.as_bytes(),
 			// dynamic image is not supported to as bytes
+			#[cfg(feature = "image")]
 			ClipboardContent::Image(_) => &[],
 			ClipboardContent::Files(data) => {
 				// use first file path as data
@@ -61,6 +66,7 @@ impl ContentData for ClipboardContent {
 			ClipboardContent::Text(data) => Ok(data),
 			ClipboardContent::Rtf(data) => Ok(data),
 			ClipboardContent::Html(data) => Ok(data),
+			#[cfg(feature = "image")]
 			ClipboardContent::Image(_) => Err("can't convert image to string".into()),
 			ClipboardContent::Files(data) => {
 				// use first file path as data
@@ -80,11 +86,13 @@ pub enum ContentFormat {
 	Text,
 	Rtf,
 	Html,
+	#[cfg(feature = "image")]
 	Image,
 	Files,
 	Other(String),
 }
 
+#[cfg(feature = "image")]
 pub struct RustImageData {
 	width: u32,
 	height: u32,
@@ -92,8 +100,10 @@ pub struct RustImageData {
 }
 
 /// 此处的 `RustImageBuffer` 已经是带有图片格式的字节流，例如 png,jpeg;
+#[cfg(feature = "image")]
 pub struct RustImageBuffer(Vec<u8>);
 
+#[cfg(feature = "image")]
 pub trait RustImage: Sized {
 	/// create an empty image
 	fn empty() -> Self;
@@ -147,6 +157,7 @@ pub trait RustImage: Sized {
 	fn to_rgba8(&self) -> Result<RgbaImage>;
 }
 
+#[cfg(feature = "image")]
 impl RustImage for RustImageData {
 	fn empty() -> Self {
 		RustImageData {
@@ -283,6 +294,7 @@ impl RustImage for RustImageData {
 	}
 }
 
+#[cfg(feature = "image")]
 impl RustImageBuffer {
 	pub fn get_bytes(&self) -> &[u8] {
 		&self.0
