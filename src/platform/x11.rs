@@ -1,7 +1,14 @@
 use crate::{
-	common::{Result, RustImage},
-	ClipboardContent, ClipboardHandler, ContentFormat, RustImageData,
+	common::Result,
+	// #[cfg(feature = "image")]
+	ClipboardContent,
+	ClipboardHandler,
+	ContentFormat,
 };
+
+#[cfg(feature = "image")]
+use crate::{common::RustImage, RustImageData};
+
 use crate::{Clipboard, ClipboardWatcher};
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::{
@@ -467,6 +474,7 @@ impl Clipboard for ClipboardContext {
 				ContentFormat::Text => formats.contains(&atoms.UTF8_STRING),
 				ContentFormat::Rtf => formats.contains(&atoms.RTF),
 				ContentFormat::Html => formats.contains(&atoms.HTML),
+				#[cfg(feature = "image")]
 				ContentFormat::Image => formats.contains(&atoms.PNG_MIME),
 				ContentFormat::Files => formats.contains(&atoms.FILE_LIST),
 				ContentFormat::Other(format_name) => {
@@ -520,6 +528,7 @@ impl Clipboard for ClipboardContext {
 		)
 	}
 
+	#[cfg(feature = "image")]
 	fn get_image(&self) -> Result<crate::RustImageData> {
 		let atoms = self.inner.server.atoms;
 		let image_bytes = self.read(&atoms.PNG_MIME);
@@ -570,6 +579,7 @@ impl Clipboard for ClipboardContext {
 					Ok(html) => contents.push(ClipboardContent::Html(html)),
 					Err(_) => continue,
 				},
+				#[cfg(feature = "image")]
 				ContentFormat::Image => match self.get_image() {
 					Ok(image) => contents.push(ClipboardContent::Image(image)),
 					Err(_) => continue,
@@ -631,6 +641,7 @@ impl Clipboard for ClipboardContext {
 		self.write(vec![data])
 	}
 
+	#[cfg(feature = "image")]
 	fn set_image(&self, image: RustImageData) -> Result<()> {
 		let atoms = self.inner.server_for_write.atoms;
 		let image_png = image.to_png()?;
@@ -670,6 +681,7 @@ impl Clipboard for ClipboardContext {
 						data: html.as_bytes().to_vec(),
 					});
 				}
+				#[cfg(feature = "image")]
 				ClipboardContent::Image(image) => {
 					let image_png = image.to_png()?;
 					data.push(ClipboardData {

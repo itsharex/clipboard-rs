@@ -1,9 +1,11 @@
+#[cfg(feature = "image")]
 use clipboard_rs::{
 	common::{RustImage, RustImageData},
 	Clipboard, ClipboardContext, ContentFormat,
 };
 
 #[test]
+#[cfg(feature = "image")]
 fn test_image() {
 	let ctx = ClipboardContext::new().unwrap();
 

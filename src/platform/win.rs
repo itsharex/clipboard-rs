@@ -4,7 +4,9 @@ use std::sync::mpsc::{Receiver, Sender};
 use std::time::Duration;
 use std::{mem, ptr, thread};
 
-use crate::common::{ContentData, Result, RustImage, RustImageData};
+use crate::common::{ContentData, Result};
+#[cfg(feature = "image")]
+use crate::common::{RustImage, RustImageData};
 use crate::{Clipboard, ClipboardContent, ClipboardHandler, ClipboardWatcher, ContentFormat};
 use clipboard_win::raw::{set_file_list_with, set_string_with, set_without_clear};
 use clipboard_win::types::c_uint;
@@ -12,7 +14,9 @@ use clipboard_win::{
 	formats, get, get_clipboard, options, raw, set_clipboard, Clipboard as ClipboardWin, Monitor,
 	SysResult,
 };
+#[cfg(feature = "image")]
 use image::codecs::bmp::BmpDecoder;
+#[cfg(feature = "image")]
 use image::DynamicImage;
 use windows::Win32::Foundation::{HANDLE, HWND};
 use windows::Win32::Graphics::Gdi::{
@@ -76,6 +80,7 @@ impl ClipboardContext {
 			ContentFormat::Text => formats::CF_UNICODETEXT,
 			ContentFormat::Rtf => *self.format_map.get(CF_RTF).unwrap(),
 			ContentFormat::Html => *self.format_map.get(CF_HTML).unwrap(),
+			#[cfg(feature = "image")]
 			ContentFormat::Image => formats::CF_DIB,
 			ContentFormat::Files => formats::CF_HDROP,
 			ContentFormat::Other(format) => clipboard_win::register_format(format).unwrap().get(),
@@ -128,6 +133,7 @@ impl Clipboard for ClipboardContext {
 				let cf_html_uint = self.format_map.get(CF_HTML).unwrap();
 				clipboard_win::is_format_avail(*cf_html_uint)
 			}
+			#[cfg(feature = "image")]
 			ContentFormat::Image => {
 				// Currently only judge whether there is a png format
 				let cf_png_uint = self.format_map.get(CF_PNG).unwrap();
@@ -198,6 +204,7 @@ impl Clipboard for ClipboardContext {
 		}
 	}
 
+	#[cfg(feature = "image")]
 	fn get_image(&self) -> Result<RustImageData> {
 		let cf_png_format = self.format_map.get(CF_PNG);
 		if cf_png_format.is_some() && clipboard_win::is_format_avail(*cf_png_format.unwrap()) {
@@ -281,6 +288,7 @@ impl Clipboard for ClipboardContext {
 						Err(_) => continue,
 					}
 				}
+				#[cfg(feature = "image")]
 				ContentFormat::Image => {
 					let img = self.get_image();
 					match img {
@@ -346,6 +354,7 @@ impl Clipboard for ClipboardContext {
 		res.map_err(|e| format!("set html error, code = {e}").into())
 	}
 
+	#[cfg(feature = "image")]
 	fn set_image(&self, image: RustImageData) -> Result<()> {
 		let _clip = ClipboardWin::new_attempts(10)
 			.map_err(|code| format!("Open clipboard error, code = {code}"));
@@ -356,9 +365,9 @@ impl Clipboard for ClipboardContext {
 		// chromium source code
 		// @link {https://source.chromium.org/chromium/chromium/src/+/main:ui/base/clipboard/clipboard_win.cc;l=771;drc=2a5aaed0ff3a0895c8551495c2656ed49baf742c;bpv=0;bpt=1}
 		let cf_png_format = self.format_map.get(CF_PNG);
-		if cf_png_format.is_some() {
+		if let Some(cf_png) = cf_png_format {
 			let png = image.to_png()?;
-			if let Err(e) = set_without_clear(*cf_png_format.unwrap(), png.get_bytes()) {
+			if let Err(e) = set_without_clear(*cf_png, png.get_bytes()) {
 				eprintln!("set png image error, code = {e}");
 				// continue set bmp image
 			}
@@ -400,6 +409,7 @@ impl Clipboard for ClipboardContext {
 						continue;
 					}
 				}
+				#[cfg(feature = "image")]
 				ClipboardContent::Image(img) => {
 					// set image will clear clipboard
 					let res = self.set_image(img);

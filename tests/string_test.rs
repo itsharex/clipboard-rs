@@ -82,8 +82,9 @@ fn test_set_multiple_formats_is_one_item_macos() {
 	// The correct behavior is to have ONE item with multiple representations.
 	// The buggy behavior creates THREE separate items.
 	autoreleasepool(|_| {
-		let pasteboard = unsafe { NSPasteboard::generalPasteboard() };
-		let items = unsafe { pasteboard.pasteboardItems() }
+		let pasteboard = NSPasteboard::generalPasteboard();
+		let items = pasteboard
+			.pasteboardItems()
 			.expect("Failed to get pasteboard items for verification");
 
 		// [THIS IS THE KEY ASSERTION]
@@ -99,7 +100,7 @@ fn test_set_multiple_formats_is_one_item_macos() {
 		// [BONUS ASSERTIONS]
 		// We can also verify that the single item contains all the correct types.
 		let item = items.objectAtIndex(0);
-		let types = unsafe { item.types() };
+		let types = item.types();
 
 		assert!(
 			unsafe { types.containsObject(NSPasteboardTypeString) },
