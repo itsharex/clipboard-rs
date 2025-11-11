@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.3.1 (2025-11-11) [released]
+
+- Merge pull request [#69](https://github.com/ChurchTao/clipboard-rs/pull/69) from Ciubix8513/master
+- Separate image into a dedicated crate feature
+- Optimized the implementation of file-related APIs on macOS
+
 ## v0.3.0 (2025-07-01) [released]
 
 - Add: Support iOS, but only for test, not for production.
