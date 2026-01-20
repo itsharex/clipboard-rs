@@ -616,12 +616,18 @@ fn extract_html_from_clipboard_data(data: &str) -> Result<String> {
 		}
 	}
 	//Make sure HTML writer didn't screw up offsets of fragment
+	// Check that start_idx is within bounds
+	if start_idx > data.len() {
+		return Err("Invalid HTML offsets: start index exceeds data length".into());
+	}
+	// Check that end_idx is within bounds
+	if end_idx > data.len() {
+		return Err("Invalid HTML offsets: end index exceeds data length".into());
+	}
+	// Check that end_idx >= start_idx
 	let size = match end_idx.checked_sub(start_idx) {
 		Some(size) => size,
-		None => return Err("Invalid HTML offsets".into()),
-	};
-	if size > data.len() {
-		return Err("Invalid HTML offsets".into());
+		None => return Err("Invalid HTML offsets: end index before start index".into()),
 	};
 	Ok(data[start_idx..end_idx].to_string())
 }
