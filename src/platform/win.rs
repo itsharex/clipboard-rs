@@ -625,10 +625,9 @@ fn extract_html_from_clipboard_data(data: &str) -> Result<String> {
 		return Err("Invalid HTML offsets: end index exceeds data length".into());
 	}
 	// Check that end_idx >= start_idx
-	let size = match end_idx.checked_sub(start_idx) {
-		Some(size) => size,
-		None => return Err("Invalid HTML offsets: end index before start index".into()),
-	};
+	if end_idx < start_idx {
+		return Err("Invalid HTML offsets: end index before start index".into());
+	}
 	Ok(data[start_idx..end_idx].to_string())
 }
 
