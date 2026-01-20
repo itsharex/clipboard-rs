@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.3.2 (2026-01-20) [released]
+
+- Fix: Fixed HTML parsing issue
+
 ## v0.3.1 (2025-11-11) [released]
 
 - Merge pull request [#69](https://github.com/ChurchTao/clipboard-rs/pull/69) from Ciubix8513/master

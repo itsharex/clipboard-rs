@@ -45,7 +45,7 @@ Add the following content to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-clipboard-rs = "0.3.1"
+clipboard-rs = "0.3.2"
 ```
 
 ## [CHANGELOG](CHANGELOG.md)
