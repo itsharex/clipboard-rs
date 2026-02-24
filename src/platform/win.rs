@@ -404,7 +404,8 @@ impl Clipboard for ClipboardContext {
 				}
 				ClipboardContent::Html(html) => {
 					let format_uint_html = self.html_format.code();
-					let res = set_without_clear(format_uint_html, html.as_bytes());
+					let cf_html = plain_html_to_cf_html(&html);
+					let res = set_without_clear(format_uint_html, cf_html.as_bytes());
 					if res.is_err() {
 						continue;
 					}
